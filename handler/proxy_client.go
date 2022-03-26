@@ -41,6 +41,8 @@ type ProxyClient struct {
 	SigningNameOverride string
 	HostOverride        string
 	RegionOverride      string
+	HostHeaderOverride  string
+	ProxyBasePath       string
 	LogFailedRequest    bool
 }
 
@@ -119,6 +121,10 @@ func (p *ProxyClient) Do(req *http.Request) (*http.Response, error) {
 		return nil, fmt.Errorf("unable to determine service from host: %s", req.Host)
 	}
 
+	// change the host header before signing request
+	if p.HostHeaderOverride != "" {
+		proxyReq.Host = p.HostHeaderOverride
+	}
 	if err := p.sign(proxyReq, service); err != nil {
 		return nil, err
 	}
@@ -138,6 +144,16 @@ func (p *ProxyClient) Do(req *http.Request) (*http.Response, error) {
 			log.WithError(err).Error("unable to dump request")
 		}
 		log.WithField("request", string(proxyReqDump)).Debug("proxying request")
+	}
+
+	// Prepend proxy base path before sending request
+	if p.ProxyBasePath != "" {
+		proxyReq.URL.Path = p.ProxyBasePath + proxyReq.URL.Path
+	}
+	
+	// change back the host header before sending request
+	if p.HostOverride != "" {
+		proxyReq.Host = p.HostOverride
 	}
 
 	resp, err := p.Client.Do(proxyReq)

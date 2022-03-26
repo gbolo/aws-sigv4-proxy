@@ -43,6 +43,8 @@ var (
 	roleArn                = kingpin.Flag("role-arn", "Amazon Resource Name (ARN) of the role to assume").String()
 	signingNameOverride    = kingpin.Flag("name", "AWS Service to sign for").String()
 	hostOverride           = kingpin.Flag("host", "Host to proxy to").String()
+	proxyBasePath          = kingpin.Flag("proxy-base-path", "Prepends this to the path URL").String()
+	hostHeaderOverride     = kingpin.Flag("host-header", "Use this host header for signing").String()
 	regionOverride         = kingpin.Flag("region", "AWS region to sign for").String()
 	disableSSLVerification = kingpin.Flag("no-verify-ssl", "Disable peer SSL certificate validation").Bool()
 )
@@ -123,6 +125,8 @@ func main() {
 				SigningNameOverride: *signingNameOverride,
 				HostOverride:        *hostOverride,
 				RegionOverride:      *regionOverride,
+				HostHeaderOverride:  *hostHeaderOverride,
+				ProxyBasePath:       *proxyBasePath,
 				LogFailedRequest:    *logFailedResponse,
 			},
 		}),
